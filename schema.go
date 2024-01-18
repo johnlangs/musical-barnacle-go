@@ -15,7 +15,6 @@ func NewFinDB() (*finDB, error) {
 	var err error
 
 	f.db, err = sql.Open("sqlite", "./fin.db")
-	f.db.SetMaxOpenConns(1)
 	if err != nil {
 		return nil, err
 	}

@@ -179,7 +179,18 @@ func transactionsHandler(w http.ResponseWriter, r *http.Request) {
 	var transactions []transaction
 	var currTransaction transaction
 	for rows.Next() {
-		rows.Scan(&currTransaction.Amount, &currTransaction.Account, &currTransaction.MerchantName, &currTransaction.Date, &currTransaction.Category)
+		rows.Scan(&currTransaction.Amount, &currTransaction.AccountID, &currTransaction.MerchantName, &currTransaction.Date, &currTransaction.Category)
+
+		accountNameRow, err := f.db.Query(`SELECT name FROM accounts WHERE account_id = ? LIMIT 1`, currTransaction.AccountID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		for accountNameRow.Next() {
+			accountNameRow.Scan(&currTransaction.Account)
+		}
 		transactions = append(transactions, currTransaction)
 	}
 
@@ -205,7 +216,7 @@ func main() {
 	plaidClient = plaid.NewAPIClient(plaidConfig)
 
 	// HTTP handler
-	fs := http.FileServer(http.Dir("./react/build"))
+	fs := http.FileServer(http.Dir("./build"))
 	http.Handle("/", fs)
 
 	http.HandleFunc("/api/create_link_token", createLinkTokenHandler)
@@ -214,7 +225,7 @@ func main() {
 	http.HandleFunc("/api/categorySpending", categoriesHandler)
 	http.HandleFunc("/api/transactions", transactionsHandler)
 
-	port := ":8080"
+	port := ":5050"
 	fmt.Println("Listening on port ", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
