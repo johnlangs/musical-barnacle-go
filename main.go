@@ -212,11 +212,11 @@ func main() {
 	plaidConfig := plaid.NewConfiguration()
 	plaidConfig.AddDefaultHeader("PLAID-CLIENT-ID", os.Getenv("PLAID_CLIENT_ID"))
 	plaidConfig.AddDefaultHeader("PLAID-SECRET", os.Getenv("PLAID_SECRET"))
-	plaidConfig.UseEnvironment(plaid.Environment(os.Getenv("PLAID_ENV")))
+	plaidConfig.UseEnvironment(plaid.Sandbox)
 	plaidClient = plaid.NewAPIClient(plaidConfig)
 
 	// HTTP handler
-	fs := http.FileServer(http.Dir("./build"))
+	fs := http.FileServer(http.Dir("./react/build"))
 	http.Handle("/", fs)
 
 	http.HandleFunc("/api/create_link_token", createLinkTokenHandler)
